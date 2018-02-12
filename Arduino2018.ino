@@ -32,6 +32,7 @@ const int   OUR_I2C_ADDR = 43;     // Out I2C address
 const int   COLOR_REDUCTION = 27;  // The amount of color to remove on each steop of the spin
 const int   YELLOW_LED_BLINK = 1000;  // The Yellow LED blink rate
 const int   BAUD_RATE = 115200;     //The serial baud rate used for comms
+const int   MAX_PING_SENSOR_COUNT = 6; // The number of PING)) sensors connected to the robot
 
 //----------------------------------------------------------------------------
 //  Pin Mappings
@@ -40,13 +41,12 @@ const int   BAUD_RATE = 115200;     //The serial baud rate used for comms
 const int   BUZZER_PIN = 6;         // Buzzer
 const uint8 LED_PIN  =  7;          // LED is on the 6th digial pin
 const int   YELLOW_LED_PIN = 13;    // The Yellow LED
-const int   PING_1 = 8;             // PING Right Front
-const int   PING_2 = 9;             // PING Right Side
-const int   PING_3 = 10;            // PING Right Rear
-const int   PING_4 = 11;            // PING Left Rear
-const int   PING_5 = 12;            // PING Left Side
-const int   PING_6 = 5              // PING Left Front
-
+const int   PING_0 = 8;             // PING Right Front
+const int   PING_1 = 9;             // PING Right Side
+const int   PING_2 = 10;            // PING Right Rear
+const int   PING_3 = 11;            // PING Left Rear
+const int   PING_4 = 12;            // PING Left Side
+const int   PING_5 = 5              // PING Left Front
 
 // Analog
 const int   ANALOG_01_PIN = A0;
@@ -85,9 +85,12 @@ byte mExtra = 1;
 long mLastTime = 0;
 StopWatch mRightLED(MAX_TIME); 
 StopWatch mSpinColorSW(SPIN_TIME);
-uint8 mSensors[MAX_SENSORS];
+uint8 mSensors[MAX_PING_SENSOR_COUNT];
+uint8 mPINGPin[] = {PING_0,PING_1,PING_2,PING_3,PING_4,PING_5}; //loads the ping pin array
+
 int mAnalog01;
 int mAnalog02;
+
 
 // Comm with Raspberry Pi vars
 uint8 mBuffer[MAX_PACKET];
@@ -174,7 +177,7 @@ void loop()
   mAnalog01 = analogRead(ANALOG_01_PIN);
   mAnalog02 = analogRead(ANALOG_02_PIN);
 
-  for(int i=0;i<MAX_SENSORS;i++)
+  for(int i=0;i<MAX_PING_SENSOR_COUNT;i++)
   {
     mSend[i+LOC_AR_SENSOR_START] = mSensors[i];
   }
@@ -239,8 +242,13 @@ void loop()
 //----------------------------------------------------------------------------
 void getProxSensors()
 {
-  
+  for(int i=0;i<MAX_PING_SENSOR_COUNT;i++)
+  {
+    mSensors[i] = ping(mPINGPin[i]);
+  }
 }
+
+
 int ping(int pingPin)
 {
   // create local variables for duration of ping
