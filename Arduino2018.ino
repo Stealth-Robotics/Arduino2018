@@ -28,12 +28,27 @@
 //----------------------------------------------------------------------------
 const long  MAX_TIME = 2000;       // Timeout for comm with the Raspberry Pi
 const long  SPIN_TIME = 40;       // Time for spining color
-const uint8 LED_PIN  =  7;         // LED is on the 6th digial pin
 const int   OUR_I2C_ADDR = 43;     // Out I2C address
 const int   COLOR_REDUCTION = 27;  // The amount of color to remove on each steop of the spin
-const int   BUZZER_PIN = 6;        // Buzzer
-const int   YELLOW_LED_PIN = 13;   // The Yellow LED
 const int   YELLOW_LED_BLINK = 1000;  // The Yellow LED blink rate
+const int   BAUD_RATE = 115200;     //The serial baud rate used for comms
+
+//----------------------------------------------------------------------------
+//  Pin Mappings
+//----------------------------------------------------------------------------
+// Digital
+const int   BUZZER_PIN = 6;         // Buzzer
+const uint8 LED_PIN  =  7;          // LED is on the 6th digial pin
+const int   YELLOW_LED_PIN = 13;    // The Yellow LED
+const int   PING_1 = 8;             // PING Right Front
+const int   PING_2 = 9;             // PING Right Side
+const int   PING_3 = 10;            // PING Right Rear
+const int   PING_4 = 11;            // PING Left Rear
+const int   PING_5 = 12;            // PING Left Side
+const int   PING_6 = 5              // PING Left Front
+
+
+// Analog
 const int   ANALOG_01_PIN = A0;
 const int   ANALOG_02_PIN = A1;
 
@@ -96,7 +111,7 @@ AStar32U4Buzzer mBuzzer;
 //----------------------------------------------------------------------------
 void setup() 
 {
-  Serial.begin(115200);
+  Serial.begin(BAUD_RATE);
   pinMode(LED_PIN, OUTPUT);
   pinMode(YELLOW_LED_PIN, OUTPUT);
   Wire.begin(OUR_I2C_ADDR);              
@@ -226,7 +241,36 @@ void getProxSensors()
 {
   
 }
+int ping(int pingPin)
+{
+  // create local variables for duration of ping
+  long duration, cm;
 
+  // The PING)) is triggered by a HIGH pulse of 2 or more microseconds.
+  // To ensure a clean pulse, we'll provide the pin with a LOW pulse prior.
+
+  pinMode(pingPin, OUTPUT);
+  digitalWrite(pingPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pingPin, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pingPin, LOW);
+
+  pinMode(pingPin, INPUT);
+  duration = pulseIn(pingPin, HIGH);
+
+  convert the time into a distance
+  cm = microsecondsToCentimeters(duration);
+  return cm;
+}
+
+long microsecondsToCentimeters(long microseconds)
+{
+  // The speed of sound is 340 m/s or 29 microseconds per centimeter.
+  // The ping travels out and back, so to find the distance of the 
+  // object we take half the distance traveled.
+  return microseconds / 29 /2;
+}
 //****************************************************************************
 //****************************************************************************
 //****************************************************************************
