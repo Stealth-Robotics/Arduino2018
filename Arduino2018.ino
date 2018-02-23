@@ -46,7 +46,7 @@ const int   PING_1 = 9;             // PING Right Side
 const int   PING_2 = 10;            // PING Right Rear
 const int   PING_3 = 11;            // PING Left Rear
 const int   PING_4 = 12;            // PING Left Side
-const int   PING_5 = 5              // PING Left Front
+const int   PING_5 = 5;             // PING Left Front
 
 // Analog
 const int   ANALOG_01_PIN = A0;
@@ -87,10 +87,10 @@ StopWatch mRightLED(MAX_TIME);
 StopWatch mSpinColorSW(SPIN_TIME);
 uint8 mSensors[MAX_PING_SENSOR_COUNT];
 uint8 mPINGPin[] = {PING_0,PING_1,PING_2,PING_3,PING_4,PING_5}; //loads the ping pin array
+uint8 mProxSensor = 0;
 
 int mAnalog01;
 int mAnalog02;
-
 
 // Comm with Raspberry Pi vars
 uint8 mBuffer[MAX_PACKET];
@@ -242,9 +242,12 @@ void loop()
 //----------------------------------------------------------------------------
 void getProxSensors()
 {
-  for(int i=0;i<MAX_PING_SENSOR_COUNT;i++)
+  mSensors[mProxSensor] = ping(mPINGPin[mProxSensor]);
+  mProxSensor++;
+
+  if(mProxSensor>=MAX_PING_SENSOR_COUNT)
   {
-    mSensors[i] = ping(mPINGPin[i]);
+    mProxSensor = 0;
   }
 }
 
@@ -267,7 +270,7 @@ int ping(int pingPin)
   pinMode(pingPin, INPUT);
   duration = pulseIn(pingPin, HIGH);
 
-  convert the time into a distance
+  // convert the time into a distance
   cm = microsecondsToCentimeters(duration);
   return cm;
 }
